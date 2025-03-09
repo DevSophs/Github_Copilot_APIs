@@ -1,0 +1,10 @@
+{
+    "name": "SnowflakeConnection",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "type": "Snowflake",
+        "typeProperties": {
+            "connectionString": "jdbc:snowflake://<account>.snowflakecomputing.com/?user=<username>&password=<password>&db=<database>&warehouse=<warehouse>&role=<role>"
+        }
+    }
+}

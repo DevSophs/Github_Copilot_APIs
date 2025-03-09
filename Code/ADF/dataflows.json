@@ -1,0 +1,51 @@
+{
+    "name": "DimCustomerDataFlow",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "name": "STG_CUSTOMER",
+                    "dataset": {
+                        "referenceName": "AzureSqlTable_STG_CUSTOMER",
+                        "type": "DatasetReference"
+                    }
+                }
+            ],
+            "sinks": [
+                {
+                    "name": "DIM_CUSTOMER",
+                    "dataset": {
+                        "referenceName": "AzureSqlTable_DIM_CUSTOMER",
+                        "type": "DatasetReference"
+                    }
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "DerivedColumns",
+                    "description": "Create full name and SCD2 columns",
+                    "transformationType": "derived",
+                    "expressionsList": [
+                        {
+                            "column": "te_full_name",
+                            "expression": "concat(name, ' ', surname)"
+                        },
+                        {
+                            "column": "dt_start",
+                            "expression": "currentDate()"
+                        },
+                        {
+                            "column": "dt_end",
+                            "expression": "toDate('9999-12-31')"
+                        },
+                        {
+                            "column": "fl_active",
+                            "expression": "1"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

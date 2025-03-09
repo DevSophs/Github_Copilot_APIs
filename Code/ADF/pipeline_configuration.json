@@ -1,0 +1,70 @@
+{
+    "name": "DWH_Loading_Pipeline",
+    "properties": {
+        "activities": [
+            {
+                "name": "Load_DIM_CUSTOMER",
+                "type": "DataFlow",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataflow": {
+                        "referenceName": "DimCustomerDataFlow",
+                        "type": "DataFlowReference"
+                    }
+                }
+            },
+            {
+                "name": "Load_DIM_ACCOUNT",
+                "type": "DataFlow",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataflow": {
+                        "referenceName": "DimAccountDataFlow",
+                        "type": "DataFlowReference"
+                    }
+                }
+            },
+            {
+                "name": "Load_DIM_CARDS",
+                "type": "DataFlow",
+                "dependsOn": [],
+                "typeProperties": {
+                    "dataflow": {
+                        "referenceName": "DimCardsDataFlow",
+                        "type": "DataFlowReference"
+                    }
+                }
+            },
+            {
+                "name": "Load_FACT_TRANSACTIONS",
+                "type": "DataFlow",
+                "dependsOn": [
+                    {
+                        "activity": "Load_DIM_CARDS",
+                        "dependencyConditions": ["Succeeded"]
+                    }
+                ],
+                "typeProperties": {
+                    "dataflow": {
+                        "referenceName": "FactTransactionsDataFlow",
+                        "type": "DataFlowReference"
+                    }
+                }
+            }
+        ]
+    }
+}

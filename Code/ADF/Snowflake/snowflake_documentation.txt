@@ -1,0 +1,116 @@
+Azure Data Factory ETL Pipeline Documentation
+Overview
+This documentation covers the ETL pipeline implementation for loading data warehouse dimensions and facts into Snowflake using Azure Data Factory (ADF).
+
+Architecture Components
+1. Linked Services
+Snowflake Connection: Manages connectivity to Snowflake database
+
+{
+    "name": "SnowflakeConnection",
+    "type": "Snowflake",
+    "connectionString": "<secure-connection-string>"
+}
+
+2. Datasets
+Source Datasets (Staging)
+STG_CUSTOMER
+STG_ACCOUNT
+STG_ACC_CUST
+STG_CARDS
+STG_TRANSACTIONS
+Target Datasets (Snowflake)
+DIM_CUSTOMER
+DIM_ACCOUNT
+DIM_CARDS
+FACT_TRANSACTIONS
+
+3. Data Flows
+Each dimension/fact has its own data flow with specific transformations:
+
+DIM_CUSTOMER Data Flow
+
+{
+    "name": "DimCustomerToSnowflake",
+    "type": "MappingDataFlow",
+    "transformations": [
+        "Derived Columns (full name concatenation)",
+        "SCD Type 2 fields generation",
+        "Column mapping and selection"
+    ]
+}
+
+Table Structures
+Dimension Tables
+DIM_CUSTOMER
+Column	Type	Description
+id_customer	NUMBER	Primary Key
+te_full_name	VARCHAR(100)	Concatenated name
+nu_age	NUMBER	Customer age
+dt_start	DATE	SCD2 start date
+dt_end	DATE	SCD2 end date
+fl_active	NUMBER(1)	Active record flag
+Implementation Steps
+Prerequisites
+
+Snowflake account and warehouse setup
+Azure Data Factory instance
+Required permissions and roles
+Deployment Process
+# Deploy using Azure PowerShell
+Set-AzDataFactoryV2Pipeline -ResourceGroupName "YourRG" -DataFactoryName "YourADF" -Name "DWH_Loading_Pipeline_Snowflake" -DefinitionFile ".\pipeline\DWH_Loading_Pipeline.json"
+
+Configuration
+
+Update linked service connection strings
+Set appropriate compute settings
+Configure error handling
+Monitoring and Maintenance
+Pipeline Monitoring
+Access ADF monitoring section
+Check activity runs
+Monitor data flow execution
+Error Handling
+Connection failures
+Data type mismatches
+Transformation errors
+Performance Optimization
+Adjust Snowflake warehouse size
+Configure appropriate data flow compute settings
+Implement partitioning strategies
+Security Considerations
+Credential Management
+
+Use Azure Key Vault for sensitive information
+Implement proper role-based access control (RBAC)
+Data Protection
+
+Enable encryption in transit
+Implement column-level encryption if needed
+Best Practices
+Development
+
+Use source control for pipeline definitions
+Implement CI/CD pipelines
+Follow naming conventions
+Testing
+
+Test with sample data first
+Validate transformations
+Check performance metrics
+Production
+
+Monitor pipeline execution
+Set up alerts
+Maintain documentation
+Troubleshooting Guide
+Common issues and solutions:
+
+Connection timeouts
+Memory limitations
+Performance bottlenecks
+Contact Information
+For support:
+
+Technical Team: tech.support@company.com
+Data Team: data.team@company.com

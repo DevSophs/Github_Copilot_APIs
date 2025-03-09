@@ -1,0 +1,72 @@
+Data Catalog - ETL Pipeline Tables
+Staging Layer
+STG_CUSTOMER
+Column	Data Type	Description	Example
+customer_id	INTEGER	Unique identifier for customer	1001
+name	STRING	Customer's first name	"John"
+surname	STRING	Customer's last name	"Smith"
+age	NUMBER	Customer's age	35
+STG_ACCOUNT
+Column	Data Type	Description	Example
+account_id	INTEGER	Unique identifier for account	5001
+account_code	STRING	Account reference code	"ACC001"
+creation_date	DATE	Date when account was created	"2024-01-15"
+STG_ACC_CUST
+Column	Data Type	Description	Example
+customer_id	INTEGER	Reference to customer	1001
+account_id	INTEGER	Reference to account	5001
+STG_CARDS
+Column	Data Type	Description	Example
+PAN	STRING	Card number (sensitive)	"4532789012345678"
+account_id	INTEGER	Reference to account	5001
+customer_id	INTEGER	Reference to customer	1001
+expiration_date	DATE	Card expiration date	"2025-12-31"
+STG_TRANSACTIONS
+Column	Data Type	Description	Example
+transaction_id	INTEGER	Unique transaction identifier	9001
+PAN	STRING	Card number used	"4532789012345678"
+account_id	INTEGER	Reference to account	5001
+customer_id	INTEGER	Reference to customer	1001
+amount	DECIMAL(15,2)	Transaction amount	150.75
+Data Warehouse Layer
+DIM_CUSTOMER
+Column	Data Type	Description	SCD Type	Example
+id_customer	NUMBER	Primary key	Type 2	1001
+te_full_name	VARCHAR(100)	Concatenated name and surname	Type 2	"John Smith"
+nu_age	NUMBER	Customer's current age	Type 2	35
+dt_start	DATE	Record validity start date	Type 2	"2024-03-09"
+dt_end	DATE	Record validity end date	Type 2	"9999-12-31"
+fl_active	NUMBER(1)	Current record indicator	Type 2	1
+DIM_ACCOUNT
+Column	Data Type	Description	SCD Type	Example
+id_account	NUMBER	Primary key	Type 2	5001
+co_account	VARCHAR(50)	Account reference code	Type 2	"ACC001"
+dt_creation	DATE	Account creation date	Type 2	"2024-01-15"
+fl_enterprise	NUMBER(1)	Enterprise account flag	Type 2	1
+dt_start	DATE	Record validity start date	Type 2	"2024-03-09"
+dt_end	DATE	Record validity end date	Type 2	"9999-12-31"
+fl_active	NUMBER(1)	Current record indicator	Type 2	1
+DIM_CARDS
+Column	Data Type	Description	SCD Type	Example
+id_car	VARCHAR(32)	MD5 hash of PAN	Type 2	"a1b2c3..."
+co_car	VARCHAR(16)	Masked PAN	Type 2	"453278XXXXXX5678"
+id_account	NUMBER	Reference to DIM_ACCOUNT	Type 2	5001
+id_customer	NUMBER	Reference to DIM_CUSTOMER	Type 2	1001
+dt_exp_date	DATE	Card expiration date	Type 2	"2025-12-31"
+dt_start	DATE	Record validity start date	Type 2	"2024-03-09"
+dt_end	DATE	Record validity end date	Type 2	"9999-12-31"
+fl_active	NUMBER(1)	Current record indicator	Type 2	1
+FACT_TRANSACTIONS
+Column	Data Type	Description	Example
+id_trx	NUMBER	Primary key	9001
+id_car	VARCHAR(32)	Reference to DIM_CARDS	"a1b2c3..."
+id_account	NUMBER	Reference to DIM_ACCOUNT	5001
+id_customer	NUMBER	Reference to DIM_CUSTOMER	1001
+va_amount	DECIMAL(15,2)	Transaction amount	150.75
+fl_reversal	NUMBER(1)	Reversal indicator	0
+Data Lineage
+STG_CUSTOMER → DIM_CUSTOMER
+STG_ACCOUNT → DIM_ACCOUNT
+STG_CARDS → DIM_CARDS
+STG_TRANSACTIONS → FACT_TRANSACTIONS
+STG_ACC_CUST (relationship table)

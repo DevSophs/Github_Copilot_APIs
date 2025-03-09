@@ -1,0 +1,45 @@
+erDiagram
+    DIM_CUSTOMER ||--o{ FACT_TRANSACTIONS : has
+    DIM_ACCOUNT ||--o{ FACT_TRANSACTIONS : has
+    DIM_CARDS ||--o{ FACT_TRANSACTIONS : has
+    DIM_CUSTOMER ||--o{ DIM_CARDS : has
+    DIM_ACCOUNT ||--o{ DIM_CARDS : has
+
+    DIM_CUSTOMER {
+        number id_customer PK
+        varchar te_full_name
+        number nu_age
+        date dt_start
+        date dt_end
+        number fl_active
+    }
+
+    DIM_ACCOUNT {
+        number id_account PK
+        varchar co_account
+        date dt_creation
+        number fl_enterprise
+        date dt_start
+        date dt_end
+        number fl_active
+    }
+
+    DIM_CARDS {
+        varchar id_car PK
+        varchar co_car
+        number id_account FK
+        number id_customer FK
+        date dt_exp_date
+        date dt_start
+        date dt_end
+        number fl_active
+    }
+
+    FACT_TRANSACTIONS {
+        number id_trx PK
+        varchar id_car FK
+        number id_account FK
+        number id_customer FK
+        decimal va_amount
+        number fl_reversal
+    }

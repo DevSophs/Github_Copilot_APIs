@@ -1,0 +1,27 @@
+{
+    "name": "DWH_Loading_Pipeline_Snowflake",
+    "properties": {
+        "activities": [
+            {
+                "name": "Load_DIM_CUSTOMER_to_Snowflake",
+                "type": "DataFlow",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30
+                },
+                "typeProperties": {
+                    "dataflow": {
+                        "referenceName": "DimCustomerToSnowflake",
+                        "type": "DataFlowReference"
+                    },
+                    "compute": {
+                        "coreCount": 8,
+                        "computeType": "General"
+                    }
+                }
+            }
+        ]
+    }
+}

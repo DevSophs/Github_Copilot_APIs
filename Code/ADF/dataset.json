@@ -1,0 +1,33 @@
+{
+    "name": "AzureSqlTable_STG_CUSTOMER",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "AzureSqlDatabase",
+            "type": "LinkedServiceReference"
+        },
+        "annotations": [],
+        "type": "AzureSqlTable",
+        "schema": [
+            {
+                "name": "customer_id",
+                "type": "int"
+            },
+            {
+                "name": "name",
+                "type": "varchar"
+            },
+            {
+                "name": "surname",
+                "type": "varchar"
+            },
+            {
+                "name": "age",
+                "type": "int"
+            }
+        ],
+        "typeProperties": {
+            "schema": "dbo",
+            "table": "STG_CUSTOMER"
+        }
+    }
+}

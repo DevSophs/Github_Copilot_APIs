@@ -1,0 +1,24 @@
+{
+    "name": "DIM_CUSTOMER_SNW",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "SnowflakeConnection",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "TableName": {
+                "type": "string",
+                "defaultValue": "DIM_CUSTOMER"
+            }
+        },
+        "type": "SnowflakeTable",
+        "schema": [
+            {"name": "id_customer", "type": "NUMBER"},
+            {"name": "te_full_name", "type": "VARCHAR"},
+            {"name": "nu_age", "type": "NUMBER"},
+            {"name": "dt_start", "type": "DATE"},
+            {"name": "dt_end", "type": "DATE"},
+            {"name": "fl_active", "type": "NUMBER"}
+        ]
+    }
+}

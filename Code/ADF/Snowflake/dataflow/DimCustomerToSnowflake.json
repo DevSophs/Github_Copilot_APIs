@@ -1,0 +1,51 @@
+{
+    "name": "DimCustomerToSnowflake",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "dataset": {
+                        "referenceName": "STG_CUSTOMER",
+                        "type": "DatasetReference"
+                    },
+                    "name": "source"
+                }
+            ],
+            "sinks": [
+                {
+                    "dataset": {
+                        "referenceName": "DIM_CUSTOMER_SNW",
+                        "type": "DatasetReference"
+                    },
+                    "name": "sink"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "DerivedColumns",
+                    "description": "Create SCD Type 2 columns",
+                    "transformationType": "derived",
+                    "expressionsList": [
+                        {
+                            "column": "te_full_name",
+                            "expression": "concat(name, ' ', surname)"
+                        },
+                        {
+                            "column": "dt_start",
+                            "expression": "currentDate()"
+                        },
+                        {
+                            "column": "dt_end",
+                            "expression": "toDate('9999-12-31')"
+                        },
+                        {
+                            "column": "fl_active",
+                            "expression": "1"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

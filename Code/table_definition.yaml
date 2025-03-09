@@ -1,0 +1,39 @@
+table:
+  name: CUSTOMER_DATA
+  columns:
+    - name: customer_id
+      type: integer
+      rules:
+        - not_null
+        - unique
+        - min: 1000
+        - max: 9999
+    
+    - name: full_name
+      type: string
+      rules:
+        - not_null
+        - min_length: 5
+        - max_length: 100
+        - pattern: "^[A-Za-z ]+$"
+    
+    - name: email
+      type: string
+      rules:
+        - not_null
+        - pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+    
+    - name: age
+      type: integer
+      rules:
+        - not_null
+        - min: 18
+        - max: 120
+    
+    - name: registration_date
+      type: date
+      rules:
+        - not_null
+        - format: "YYYY-MM-DD"
+        - min: "2020-01-01"
+        - max: "2024-12-31"
