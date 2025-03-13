@@ -1072,3 +1072,111 @@ This data model follows a star schema design with three dimension tables and one
 - Fact table: FACT_TRANSACTIONS
 
 ## Entity-Relationship Diagram
+              +----------------+
+              | DIM_CUSTOMER   |
+              +----------------+
+              | id_customer (PK)|
+              | te_full_name   |
+              | nu_age         |
+              | dt_start       |
+              | dt_end         |
+              | fl_active      |
+              +-------+--------+
+                      |
+                      |
++----------------+ | +----------------+ | DIM_ACCOUNT | | | DIM_CARDS | +----------------+ | +----------------+ | id_account (PK)| | | id_car (PK) | | co_account | | | co_car | | dt_creation | | | id_account (FK)| | fl_enterprise | | | id_customer (FK)| | dt_start | | | dt_exp_date | | dt_end | | | dt_start | | fl_active | | | dt_end | +-------+--------+ | | fl_active | | | +-------+--------+ | | | | | | | | | | +---------------------------+ | +---| FACT_TRANSACTIONS |--+ +---------------------------+ | id_trx (PK) | | id_car (FK) | | id_account (FK) | | id_customer (FK) | | va_amount | | fl_reversal | +---------------------------+
+
+
+## Dimension Design
+- All dimensions implement Slowly Changing Dimension Type-2 (SCD-2) to track historical changes
+- Each dimension contains the following tracking fields:
+  - dt_start: Date when the record becomes valid
+  - dt_end: Date when the record becomes invalid
+  - fl_active: Flag indicating if the record is currently active
+
+## Relationships
+1. FACT_TRANSACTIONS to DIM_CUSTOMER: Many-to-one (id_customer)
+2. FACT_TRANSACTIONS to DIM_ACCOUNT: Many-to-one (id_account)
+3. FACT_TRANSACTIONS to DIM_CARDS: Many-to-one (id_car)
+4. DIM_CARDS to DIM_CUSTOMER: Many-to-one (id_customer)
+5. DIM_CARDS to DIM_ACCOUNT: Many-to-one (id_account)
+
+## Data Grain
+- The FACT_TRANSACTIONS table is at the individual transaction level
+- Each row represents a single transaction with references to the dimensions
+
+## Usage Patterns
+1. Customer analysis: Join FACT_TRANSACTIONS with DIM_CUSTOMER
+2. Account analysis: Join FACT_TRANSACTIONS with DIM_ACCOUNT
+3. Card analysis: Join FACT_TRANSACTIONS with DIM_CARDS
+4. Multi-dimensional analysis: Join FACT_TRANSACTIONS with multiple dimensions
+*/
+
+-- 13. given a sql query script which makes table creation, insert statement and other DML operations, create a rollback script
+/*
+-- Original Script:
+-- 1. Create a table
+CREATE TABLE Employees (
+    EmployeeID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    BirthDate DATE,
+    HireDate DATE
+);
+
+-- 2. Insert data into a table
+INSERT INTO Employees (EmployeeID, FirstName, LastName, BirthDate, HireDate)
+VALUES (1, 'John', 'Doe', '1980-01-01', '2020-01-01');
+
+-- 3. Update data in a table
+UPDATE Employees
+SET LastName = 'Smith'
+WHERE EmployeeID = 1;
+
+-- 4. Create an index
+CREATE INDEX idx_lastname ON Employees (LastName);
+
+-- 5. Create another table with foreign key
+CREATE TABLE Departments (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(50)
+);
+
+CREATE TABLE EmployeeDepartments (
+    EmployeeID INT,
+    DepartmentID INT,
+    PRIMARY KEY (EmployeeID, DepartmentID),
+    FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID),
+    FOREIGN KEY (DepartmentID) REFERENCES Departments(DepartmentID)
+);
+*/
+
+-- Rollback Script:
+-- This script will undo all operations in the REVERSE order of their execution
+
+-- 5. Drop the tables with foreign keys first (to avoid constraint violations)
+DROP TABLE IF EXISTS EmployeeDepartments;
+DROP TABLE IF EXISTS Departments;
+
+-- 4. Drop any created indexes
+DROP INDEX IF EXISTS idx_lastname ON Employees;
+
+-- 3. Restore updated data to original values
+-- For a true rollback, you would need the original data values
+-- This assumes you know the original values or have them backed up
+UPDATE Employees
+SET LastName = 'Doe'  -- Original value before update
+WHERE EmployeeID = 1;
+
+-- 2. Remove inserted data
+DELETE FROM Employees
+WHERE EmployeeID = 1;
+
+-- 1. Drop the created table
+DROP TABLE IF EXISTS Employees;
+
+-- Note: A complete rollback script requires:
+-- 1. Knowledge of original data state
+-- 2. Handling potential dependency errors
+-- 3. Transaction management to ensure atomicity
+-- 4. Careful ordering to respect referential integrity
