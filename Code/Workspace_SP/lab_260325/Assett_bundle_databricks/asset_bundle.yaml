@@ -1,0 +1,47 @@
+# Databricks Asset Bundle Configuration
+asset_bundle:
+  name: "example_asset_bundle"
+  description: "Configuration for Databricks Asset Bundle"
+  version: "1.0.0"
+
+databricks:
+  workspace_url: "https://<your-databricks-workspace>.cloud.databricks.com"
+  token: "<your-databricks-token>"
+
+assets:
+  - name: "notebook_example"
+    type: "notebook"
+    path: "/Workspace/Notebooks/example_notebook"
+    language: "python"
+
+  - name: "job_example"
+    type: "job"
+    config:
+      name: "example_job"
+      tasks:
+        - task_key: "example_task"
+          notebook_task:
+            notebook_path: "/Workspace/Notebooks/example_notebook"
+          cluster_spec:
+            new_cluster:
+              spark_version: "11.3.x-scala2.12"
+              node_type_id: "i3.xlarge"
+              num_workers: 2
+
+  - name: "library_example"
+    type: "library"
+    libraries:
+      - pypi:
+          package: "pandas"
+      - maven:
+          coordinates: "org.apache.spark:spark-sql_2.12:3.3.0"
+
+  - name: "table_example"
+    type: "table"
+    database: "example_database"
+    table_name: "example_table"
+    location: "dbfs:/mnt/example-data/"
+
+deployment:
+  environment: "development"
+  overwrite: true
