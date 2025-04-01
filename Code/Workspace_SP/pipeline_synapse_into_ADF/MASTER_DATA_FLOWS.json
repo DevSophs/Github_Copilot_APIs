@@ -1,0 +1,1081 @@
+{
+    "name": "MASTER_DATA_FLOWS",
+    "properties": {
+        "activities": [
+            {
+                "name": "copy_landing_history",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "trigger_input_file_check",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "IDQS_copy_history",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "master_pipe_run_id": {
+                            "value": "@pipeline().RunId",
+                            "type": "Expression"
+                        },
+                        "file_system": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.file_system",
+                            "type": "Expression"
+                        },
+                        "directory": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.directory",
+                            "type": "Expression"
+                        },
+                        "filename": {
+                            "value": "@pipeline().parameters.trigger_file_name",
+                            "type": "Expression"
+                        },
+                        "trigger_start_time": {
+                            "value": "@pipeline().parameters.trigger_start_time",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "apply_landing_dq_rules",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "apply_dq_rules",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "_check_apply_DQ",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "master_pipe_run_id": {
+                            "value": "@pipeline().RunId",
+                            "type": "Expression"
+                        },
+                        "notebook_input_filepath": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.notebook_input_filepath",
+                            "type": "Expression"
+                        },
+                        "notebook_yaml_filepath": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.notebook_yaml_filepath",
+                            "type": "Expression"
+                        },
+                        "flow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "domain_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.domain_name",
+                            "type": "Expression"
+                        },
+                        "trigger_start_time": {
+                            "value": "@pipeline().parameters.trigger_start_time",
+                            "type": "Expression"
+                        },
+                        "id_scorecard": {
+                            "value": "@activity('insert_log_t_gen_monitoring_landing').output.pipelineReturnValue.id_scorecard",
+                            "type": "Expression"
+                        },
+                        "dq_step": "landing",
+                        "ada_server_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_server_name",
+                            "type": "Expression"
+                        },
+                        "ada_infadb_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_infadb_db_name",
+                            "type": "Expression"
+                        },
+                        "file_system": {
+                            "value": "@concat(activity('trigger_input_file_check').output.pipelineReturnValue.file_system,'-dq-files')",
+                            "type": "Expression"
+                        },
+                        "directory": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.directory",
+                            "type": "Expression"
+                        },
+                        "t_gen_monitoring_id": {
+                            "value": "@activity('insert_log_t_gen_monitoring_landing').output.pipelineReturnValue.t_gen_monitoring_id",
+                            "type": "Expression"
+                        },
+                        "email_env_prefix": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.email_env_prefix",
+                            "type": "Expression"
+                        },
+                        "ada_portal_url": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_url",
+                            "type": "Expression"
+                        },
+                        "ada_portal_schema_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_schema_name",
+                            "type": "Expression"
+                        },
+                        "subflow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.subflow_name",
+                            "type": "Expression"
+                        },
+                        "scope": {
+                            "value": "IDQS",
+                            "type": "Expression"
+                        },
+                        "dataquality_result": {
+                            "value": "@json(activity('apply_dq_rules').output.status.Output.result.exitValue)",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "trigger_input_file_check",
+                "type": "ExecutePipeline",
+                "dependsOn": [],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "_check_input_file",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "trigger_file_name": {
+                            "value": "@pipeline().parameters.trigger_file_name",
+                            "type": "Expression"
+                        },
+                        "trigger_file_path": {
+                            "value": "@pipeline().parameters.trigger_file_path",
+                            "type": "Expression"
+                        },
+                        "input_file_sa_account_name": {
+                            "value": "@pipeline().parameters.input_file_sa_account_name",
+                            "type": "Expression"
+                        },
+                        "input_file_type": "csv",
+                        "input_flow_name_check": {
+                            "value": "@pipeline().parameters.input_flow_name_check",
+                            "type": "Expression"
+                        },
+                        "master_pipe_run_id": {
+                            "value": "@pipeline().RunId",
+                            "type": "Expression"
+                        },
+                        "env": {
+                            "value": "@pipeline().parameters.env",
+                            "type": "Expression"
+                        },
+                        "scope": "IDQS"
+                    }
+                }
+            },
+            {
+                "name": "insert_log_t_gen_monitoring_landing",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "trigger_input_file_check",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "IDQS_log_t_gen_monitoring",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "master_pipe_run_id": {
+                            "value": "@pipeline().RunId",
+                            "type": "Expression"
+                        },
+                        "ada_server_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_server_name",
+                            "type": "Expression"
+                        },
+                        "ada_infadb_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_infadb_db_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_db_name",
+                            "type": "Expression"
+                        },
+                        "trigger_start_time": {
+                            "value": "@pipeline().parameters.trigger_start_time",
+                            "type": "Expression"
+                        },
+                        "scope": "IDQS",
+                        "flow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "domain_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.domain_name",
+                            "type": "Expression"
+                        },
+                        "subflow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "directory": {
+                            "value": "@concat('/h_landing/',join(skip(split(activity('trigger_input_file_check').output.pipelineReturnValue.directory,'/'),1),'/'))",
+                            "type": "Expression"
+                        },
+                        "write_mode": "insert",
+                        "filename": {
+                            "value": "@pipeline().parameters.trigger_file_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_schema_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_schema_name",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "error_log_t_gen_monitoring",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "insert_log_t_gen_monitoring_landing",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    },
+                    {
+                        "activity": "check_apply_landing_dq_output_type",
+                        "dependencyConditions": [
+                            "Skipped",
+                            "Succeeded"
+                        ]
+                    },
+                    {
+                        "activity": "foreach_transformed_files_landing",
+                        "dependencyConditions": [
+                            "Skipped",
+                            "Failed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "IDQS_log_t_gen_monitoring",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "ada_server_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_server_name",
+                            "type": "Expression"
+                        },
+                        "ada_infadb_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_infadb_db_name",
+                            "type": "Expression"
+                        },
+                        "t_gen_monitoring_id": {
+                            "value": "@activity('insert_log_t_gen_monitoring_landing').output.pipelineReturnValue.t_gen_monitoring_id",
+                            "type": "Expression"
+                        },
+                        "write_mode": "error",
+                        "ada_portal_schema_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_schema_name",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "send_mail_file_check_error",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "trigger_input_file_check",
+                        "dependencyConditions": [
+                            "Failed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "IDQS_send_mail",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "logic_app_syn_id": {
+                            "value": "@pipeline().parameters.syn_msi_id",
+                            "type": "Expression"
+                        },
+                        "logic_app_endpoint": {
+                            "value": "@pipeline().parameters.logic_app_email_endpoint",
+                            "type": "Expression"
+                        },
+                        "logic_app_mail_body": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.error_mail_body",
+                            "type": "Expression"
+                        },
+                        "ada_server_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_server_name",
+                            "type": "Expression"
+                        },
+                        "ada_infadb_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_infadb_db_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_db_name",
+                            "type": "Expression"
+                        },
+                        "mail_type": "input_file_check_error",
+                        "logic_app_mail_subject": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.error_mail_subject",
+                            "type": "Expression"
+                        },
+                        "logic_app_reply_to": "dummy_mail@prova.com",
+                        "cc_list_error": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.cc_mailing_list_error",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "send_mail_type_start",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "trigger_input_file_check",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "IDQS_send_mail",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "logic_app_syn_id": {
+                            "value": "@pipeline().parameters.syn_msi_id",
+                            "type": "Expression"
+                        },
+                        "logic_app_endpoint": {
+                            "value": "@pipeline().parameters.logic_app_email_endpoint",
+                            "type": "Expression"
+                        },
+                        "logic_app_mail_body": {
+                            "value": "@concat('Please note that the file:<b>\n',pipeline().parameters.trigger_file_name, '</b> has been received and is now undergoing all check processes. <br/><br/>\nDetails:<br/>\nPipeline run id: ',pipeline().RunId,'<br/>\nFile name: ',pipeline().parameters.trigger_file_name,'<br/>\nStart time: ',formatDateTime(pipeline().parameters.trigger_start_time,'yyyy-MM-dd HH:mm:ss (UTC)'),'<br/><br/>\n\nTHIS IS AN AUTOMATED MESSAGE - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL <br/>\nFor more details send an email to: dummy_mail@prova.com')",
+                            "type": "Expression"
+                        },
+                        "ada_server_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_server_name",
+                            "type": "Expression"
+                        },
+                        "ada_infadb_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_infadb_db_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_db_name",
+                            "type": "Expression"
+                        },
+                        "scope": "IDQS",
+                        "domain_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.domain_name",
+                            "type": "Expression"
+                        },
+                        "subflow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_schema_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_schema_name",
+                            "type": "Expression"
+                        },
+                        "flow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "mail_type": "start",
+                        "logic_app_mail_subject": {
+                            "value": "@concat(activity('trigger_input_file_check').output.pipelineReturnValue.email_env_prefix,'IDQS - ',activity('trigger_input_file_check').output.pipelineReturnValue.domain_name,' - ',activity('trigger_input_file_check').output.pipelineReturnValue.flow_name ,' Execution Results: Process Started.')",
+                            "type": "Expression"
+                        },
+                        "logic_app_reply_to": "dummy_email@prova.com"
+                    }
+                }
+            },
+            {
+                "name": "send_mail_type_apply_dq_landing_output",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "apply_landing_dq_rules",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "IDQS_send_mail",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "logic_app_syn_id": {
+                            "value": "@pipeline().parameters.syn_msi_id",
+                            "type": "Expression"
+                        },
+                        "logic_app_endpoint": {
+                            "value": "@pipeline().parameters.logic_app_email_endpoint",
+                            "type": "Expression"
+                        },
+                        "logic_app_mail_body": {
+                            "value": "@activity('apply_landing_dq_rules').output.pipelineReturnValue.mail_body",
+                            "type": "Expression"
+                        },
+                        "ada_server_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_server_name",
+                            "type": "Expression"
+                        },
+                        "ada_infadb_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_infadb_db_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_db_name",
+                            "type": "Expression"
+                        },
+                        "scope": "IDQS",
+                        "domain_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.domain_name",
+                            "type": "Expression"
+                        },
+                        "subflow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_schema_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_schema_name",
+                            "type": "Expression"
+                        },
+                        "flow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "mail_type": "end_apply_dq_landing",
+                        "logic_app_mail_subject": {
+                            "value": "@activity('apply_landing_dq_rules').output.pipelineReturnValue.mail_subject",
+                            "type": "Expression"
+                        },
+                        "logic_app_reply_to": "dummy_email@prova.com"
+                    }
+                }
+            },
+            {
+                "name": "send_mail_generic_error",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "send_mail_file_check_error",
+                        "dependencyConditions": [
+                            "Skipped"
+                        ]
+                    },
+                    {
+                        "activity": "foreach_transformed_files_landing",
+                        "dependencyConditions": [
+                            "Skipped",
+                            "Failed"
+                        ]
+                    },
+                    {
+                        "activity": "check_apply_landing_dq_output_type",
+                        "dependencyConditions": [
+                            "Skipped",
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "IDQS_send_mail",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "logic_app_syn_id": {
+                            "value": "@pipeline().parameters.syn_msi_id",
+                            "type": "Expression"
+                        },
+                        "logic_app_endpoint": {
+                            "value": "@pipeline().parameters.logic_app_email_endpoint",
+                            "type": "Expression"
+                        },
+                        "logic_app_mail_body": {
+                            "value": "@concat(\n    'Please note that some checks have failed within ADA process: please log in ', activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_url,' (Opens in new window or tab) for further details.<br/><br/>\n    Detailed execution results:<br/>\n    Pipeline run id: ', pipeline().RunId,'<br/>\n    File name: ', pipeline().parameters.trigger_file_name,'<br/><br/>\n    The file has not been processed by the system. <br/><br/>\n\nIf the error persists, you can open an incident: (https://generali.service-now.com/gss), providing the file and a copy of this e-mail.<br/><br/>\n\n    THIS IS AN AUTOMATED MESSAGE - PLEASE DO NOT REPLY DIRECTLY TO THIS EMAIL. <br/>\n    For more details send an email to: Ada.support@emeal.nttdata.com'\n)",
+                            "type": "Expression"
+                        },
+                        "ada_server_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_server_name",
+                            "type": "Expression"
+                        },
+                        "ada_infadb_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_infadb_db_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_db_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_db_name",
+                            "type": "Expression"
+                        },
+                        "scope": "IDQS",
+                        "domain_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.domain_name",
+                            "type": "Expression"
+                        },
+                        "subflow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "ada_portal_schema_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.ada_portal_schema_name",
+                            "type": "Expression"
+                        },
+                        "flow_name": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                            "type": "Expression"
+                        },
+                        "mail_type": "generic_error",
+                        "logic_app_mail_subject": {
+                            "value": "@concat(activity('trigger_input_file_check').output.pipelineReturnValue.email_env_prefix, 'IDQS - ', pipeline().parameters.trigger_file_name, ' - Execution Results: Process failed'\n)",
+                            "type": "Expression"
+                        },
+                        "logic_app_reply_to": "dummy_email@prova.com",
+                        "cc_list_error": {
+                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.cc_mailing_list_error",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "check_apply_landing_dq_output_type",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "apply_landing_dq_rules",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@or(or(equals(activity('apply_landing_dq_rules').output.pipelineReturnValue.output_type,'blocking'),equals(activity('apply_landing_dq_rules').output.pipelineReturnValue.output_type,'unknown')),equals(activity('apply_landing_dq_rules').output.pipelineReturnValue.output_type,'policy blocking'))",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "end_fail_landing_blocking_unknown_landing",
+                            "type": "Fail",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "message": {
+                                    "value": "@concat(pipeline().parameters.trigger_file_name, ' has blocking or unknown return status')",
+                                    "type": "Expression"
+                                },
+                                "errorCode": "500"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "foreach_transformed_files_landing",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "check_apply_landing_dq_output_type",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('apply_landing_dq_rules').output.pipelineReturnValue.transformed_file_paths",
+                        "type": "Expression"
+                    },
+                    "isSequential": false,
+                    "batchCount": 5,
+                    "activities": [
+                        {
+                            "name": "copy_staging_reference",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "BinarySource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": true
+                                    },
+                                    "formatSettings": {
+                                        "type": "BinaryReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "BinarySink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings",
+                                        "copyBehavior": "PreserveHierarchy"
+                                    }
+                                },
+                                "enableStaging": false
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "idqs_common_binary_file",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "file_system": {
+                                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.file_system",
+                                            "type": "Expression"
+                                        },
+                                        "directory": {
+                                            "value": "@join(take(split(item(),'/'),sub(length(split(item(),'/')),1)),'/')",
+                                            "type": "Expression"
+                                        },
+                                        "filename": {
+                                            "value": "@last(split(item(),'/'))",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "idqs_common_binary_file",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "file_system": {
+                                            "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.file_system",
+                                            "type": "Expression"
+                                        },
+                                        "directory": {
+                                            "value": "@concat('reference/',join(skip(take(split(item(),'/'),sub(length(split(item(),'/')),1)),1),'/'))",
+                                            "type": "Expression"
+                                        },
+                                        "filename": {
+                                            "value": "@last(split(item(),'/'))",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "exec_SP_LOAD_PARQUET_COPY_COMMAND",
+                            "type": "SqlServerStoredProcedure",
+                            "dependsOn": [
+                                {
+                                    "activity": "copy_reference_history",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "storedProcedureName": "[IDQS].[SP_LOAD_PARQUET_COPY_COMMAND]",
+                                "storedProcedureParameters": {
+                                    "filepath": {
+                                        "value": {
+                                            "value": "@concat(\n    'https://',pipeline().parameters.input_file_sa_account_name,'.dfs.core.windows.net/',\n    activity('trigger_input_file_check').output.pipelineReturnValue.file_system,\n    '/reference/',\n    join(skip(take(split(item(),'/'),sub(length(split(item(),'/')),1)),1),'/'),\n    '/',\n    last(split(item(),'/'))\n    )",
+                                            "type": "Expression"
+                                        },
+                                        "type": "String"
+                                    },
+                                    "object_name": {
+                                        "value": {
+                                            "value": "@first(split(last(split(item(),'/')),'-'))",
+                                            "type": "Expression"
+                                        },
+                                        "type": "String"
+                                    },
+                                    "object_schema": {
+                                        "value": "IDQS",
+                                        "type": "String"
+                                    }
+                                }
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "ls_idqs_sql_dedicated_pool",
+                                "type": "LinkedServiceReference"
+                            }
+                        },
+                        {
+                            "name": "copy_reference_history",
+                            "type": "ExecutePipeline",
+                            "dependsOn": [
+                                {
+                                    "activity": "copy_staging_reference",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "pipeline": {
+                                    "referenceName": "IDQS_copy_history",
+                                    "type": "PipelineReference"
+                                },
+                                "waitOnCompletion": true,
+                                "parameters": {
+                                    "master_pipe_run_id": {
+                                        "value": "@pipeline().RunId",
+                                        "type": "Expression"
+                                    },
+                                    "file_system": {
+                                        "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.file_system",
+                                        "type": "Expression"
+                                    },
+                                    "directory": {
+                                        "value": "@concat('reference/',join(skip(take(split(item(),'/'),sub(length(split(item(),'/')),1)),1),'/'))",
+                                        "type": "Expression"
+                                    },
+                                    "filename": {
+                                        "value": "@last(split(item(),'/'))",
+                                        "type": "Expression"
+                                    },
+                                    "trigger_start_time": {
+                                        "value": "@pipeline().parameters.trigger_start_time",
+                                        "type": "Expression"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "generic_error_fail",
+                "type": "Fail",
+                "dependsOn": [
+                    {
+                        "activity": "send_mail_generic_error",
+                        "dependencyConditions": [
+                            "Completed"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "message": {
+                        "value": "@concat('pipeline ', pipeline().Pipeline, ' failed. run-id: ', pipeline().RunId)",
+                        "type": "Expression"
+                    },
+                    "errorCode": "500"
+                }
+            },
+            {
+                "name": "clear_landing",
+                "type": "Delete",
+                "dependsOn": [
+                    {
+                        "activity": "foreach_transformed_files_landing",
+                        "dependencyConditions": [
+                            "Skipped",
+                            "Completed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "idqs_common_binary_file",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "file_system": {
+                                "value": "@first(split(pipeline().parameters.trigger_file_path,'/'))",
+                                "type": "Expression"
+                            },
+                            "directory": {
+                                "value": "@join(skip(split(pipeline().parameters.trigger_file_path,'/'),1),'/')",
+                                "type": "Expression"
+                            },
+                            "filename": {
+                                "value": "@pipeline().parameters.trigger_file_name",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "enableLogging": false,
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "enablePartitionDiscovery": false
+                    }
+                }
+            },
+            {
+                "name": "file_check_error_fail",
+                "type": "Fail",
+                "dependsOn": [
+                    {
+                        "activity": "send_mail_file_check_error",
+                        "dependencyConditions": [
+                            "Completed"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "message": {
+                        "value": "@concat('pipeline ', pipeline().Pipeline, ' failed for input file check. run-id: ', pipeline().RunId)",
+                        "type": "Expression"
+                    },
+                    "errorCode": "500"
+                }
+            },
+            {
+                "name": "apply_dq_rules",
+                "type": "SynapseNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "copy_landing_history",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    },
+                    {
+                        "activity": "send_mail_type_start",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    },
+                    {
+                        "activity": "insert_log_t_gen_monitoring_landing",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebook": {
+                        "referenceName": "main_idqs",
+                        "type": "NotebookReference"
+                    },
+                    "parameters": {
+                        "path_file": {
+                            "value": {
+                                "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.notebook_input_filepath",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "path_yaml": {
+                            "value": {
+                                "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.notebook_yaml_filepath",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "domain_name": {
+                            "value": {
+                                "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.domain_name",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "flow_name": {
+                            "value": {
+                                "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.flow_name",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "dq_step": {
+                            "value": {
+                                "value": "landing",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "master_pipe_run_id": {
+                            "value": {
+                                "value": "@pipeline().RunId",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "trigger_start_time": {
+                            "value": {
+                                "value": "@pipeline().parameters.trigger_start_time",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "id_scorecard": {
+                            "value": {
+                                "value": "@activity('insert_log_t_gen_monitoring_landing').output.pipelineReturnValue.id_scorecard",
+                                "type": "Expression"
+                            },
+                            "type": "int"
+                        },
+                        "subflow_name": {
+                            "value": {
+                                "value": "@activity('trigger_input_file_check').output.pipelineReturnValue.subflow_name",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "scope": {
+                            "value": {
+                                "value": "IDQS\n",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        }
+                    },
+                    "snapshot": true,
+                    "sparkPool": {
+                        "referenceName": "CLCFOIDQSPOOL01",
+                        "type": "BigDataPoolReference"
+                    },
+                    "executorSize": "Small",
+                    "conf": {
+                        "spark.dynamicAllocation.enabled": false,
+                        "spark.dynamicAllocation.minExecutors": 1,
+                        "spark.dynamicAllocation.maxExecutors": 1
+                    },
+                    "driverSize": "Small",
+                    "numExecutors": 1
+                }
+            }
+        ],
+        "parameters": {
+            "trigger_file_name": {
+                "type": "string"
+            },
+            "trigger_file_path": {
+                "type": "string"
+            },
+            "input_file_sa_account_name": {
+                "type": "string"
+            },
+            "trigger_start_time": {
+                "type": "string"
+            },
+            "syn_msi_id": {
+                "type": "string"
+            },
+            "logic_app_email_endpoint": {
+                "type": "string"
+            },
+            "input_flow_name_check": {
+                "type": "string"
+            },
+            "dim_table_key_cols": {
+                "type": "array"
+            },
+            "env": {
+                "type": "string"
+            }
+        },
+        "folder": {
+            "name": "IDQS/DATA_FLOWS"
+        },
+        "annotations": [
+            "IDQS"
+        ]
+    }
+}
